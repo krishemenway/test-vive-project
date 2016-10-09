@@ -18,12 +18,38 @@ class InteractableItem : MonoBehaviour
 	private float angle;
 	private Vector3 axis;
 
+	private GameObject pointer;
+	private GameObject box;
+
 	void Start()
 	{
 		found_rigidbody = GetComponent<Rigidbody>();
 		interactionPoint = new GameObject().transform;
 		velocityFactor /= found_rigidbody.mass;
 		rotationFactor /= found_rigidbody.mass;
+
+
+
+		var newMaterial = new Material(Shader.Find("Unlit/Color"));
+		newMaterial.SetColor("_Color", Color.blue);
+
+		box = new GameObject();
+		box.transform.parent = interactionPoint.transform;
+		box.transform.localPosition = Vector3.zero;
+		box.transform.localRotation = Quaternion.identity;
+
+		pointer = GameObject.CreatePrimitive(PrimitiveType.Cube);
+		pointer.transform.parent = box.transform;
+		pointer.transform.localScale = new Vector3(0.25f, 0.25f, 0.25f);
+		pointer.transform.localPosition = Vector3.zero;
+		pointer.transform.localRotation = Quaternion.identity;
+		pointer.GetComponent<MeshRenderer>().material = newMaterial;
+
+		var collider = pointer.GetComponent<BoxCollider>();
+		if (collider)
+		{
+			Object.Destroy(collider);
+		}
 	}
 
 	void Update()
@@ -48,16 +74,17 @@ class InteractableItem : MonoBehaviour
 	public void BeginInteraction(Component wand)
 	{
 		attachedWand = wand;
-		interactionPoint.position = wand.transform.position;
-		interactionPoint.rotation = wand.transform.rotation;
-		interactionPoint.SetParent(transform, true);
+
+		interactionPoint.position = attachedWand.transform.position;
+		interactionPoint.rotation = attachedWand.transform.rotation;
+		interactionPoint.SetParent(this.transform, true);
 
 		currentlyInteracting = true;
 	}
 
 	public void EndInteraction(Component wand)
 	{
-		if (wand == attachedWand)
+		if (attachedWand == wand)
 		{
 			attachedWand = null;
 			currentlyInteracting = false;

@@ -3,8 +3,13 @@ using UnityEngine.Networking;
 
 public class PlayerAvatar : NetworkBehaviour
 {
-	public override void OnStartLocalPlayer()
+	void Start()
 	{
+		if (!isLocalPlayer)
+		{
+			return;
+		}
+
 		FindTrackedObjects();
 
 		// Attach the SteamVR camera rig to this local player avatar
@@ -14,10 +19,6 @@ public class PlayerAvatar : NetworkBehaviour
 		AttachObjectToParentTransform(AvatarHead, _cameraRigHeadTransform);
 		AttachObjectToParentTransform(AvatarLeftHand, LeftController.transform);
 		AttachObjectToParentTransform(AvatarRightHand, RightController.transform);
-
-		// Move the giant hand boxes slightly under the controllers for now (until I can figure out how to hide these for the local player but keep them visible for the remote player)...
-		AvatarLeftHand.transform.Translate(0, -0.4f, 0);
-		AvatarRightHand.transform.Translate(0, -0.4f, 0);
 	}
 
 	private void FindTrackedObjects()
