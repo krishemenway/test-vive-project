@@ -167,11 +167,6 @@ public class PlayerAvatarLeftHand : MonoBehaviour
 
 			if (_interactingItem)
 			{
-				if (_interactingItem.IsInteracting())
-				{
-					_interactingItem.EndInteraction(_leftController.transform);
-				}
-
 				_interactingItem.BeginInteraction(_leftController.transform);
 			}
 		}
@@ -182,7 +177,7 @@ public class PlayerAvatarLeftHand : MonoBehaviour
 
 			if (_interactingItem != null)
 			{
-				_interactingItem.EndInteraction(_leftController.transform);
+				_interactingItem.EndInteraction();
 			}
 		}
 	}

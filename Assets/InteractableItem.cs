@@ -2,97 +2,63 @@
 
 class InteractableItem : MonoBehaviour
 {
-	public Rigidbody found_rigidbody;
-
-	private bool currentlyInteracting;
-
-	private Component attachedWand;
-
-	private Transform interactionPoint;
-
-	private float velocityFactor = 20000f;
-	private Vector3 posDelta;
-
-	private float rotationFactor = 400f;
-	private Quaternion rotationDelta;
-	private float angle;
-	private Vector3 axis;
-
-	private GameObject pointer;
-	private GameObject box;
-
 	void Start()
 	{
-		found_rigidbody = GetComponent<Rigidbody>();
-		interactionPoint = new GameObject().transform;
-		velocityFactor /= found_rigidbody.mass;
-		rotationFactor /= found_rigidbody.mass;
+		_rigidBody = GetComponent<Rigidbody>();
 
+		velocityFactor /= _rigidBody.mass;
+		rotationFactor /= _rigidBody.mass;
 
-
-		var newMaterial = new Material(Shader.Find("Unlit/Color"));
-		newMaterial.SetColor("_Color", Color.blue);
-
-		box = new GameObject();
-		box.transform.parent = interactionPoint.transform;
-		box.transform.localPosition = Vector3.zero;
-		box.transform.localRotation = Quaternion.identity;
-
-		pointer = GameObject.CreatePrimitive(PrimitiveType.Cube);
-		pointer.transform.parent = box.transform;
-		pointer.transform.localScale = new Vector3(0.25f, 0.25f, 0.25f);
-		pointer.transform.localPosition = Vector3.zero;
-		pointer.transform.localRotation = Quaternion.identity;
-		pointer.GetComponent<MeshRenderer>().material = newMaterial;
-
-		var collider = pointer.GetComponent<BoxCollider>();
-		if (collider)
-		{
-			Object.Destroy(collider);
-		}
+		_initialGrabLocation = new GameObject();
+		_initialGrabLocation.AttachDebugCube();
 	}
 
 	void Update()
 	{
-		if (attachedWand != null && currentlyInteracting)
+		if (IsInteracting)
 		{
-			posDelta = attachedWand.transform.position - interactionPoint.position;
-			found_rigidbody.velocity = posDelta * velocityFactor * Time.fixedDeltaTime;
+			var posDelta = _currentGrabLocation.position - _initialGrabLocation.transform.position;
+			_rigidBody.velocity = posDelta * velocityFactor * Time.fixedDeltaTime;
 
-			rotationDelta = attachedWand.transform.rotation * Quaternion.Inverse(interactionPoint.rotation);
+
+			float angle;
+			Vector3 axis;
+
+			var rotationDelta = _currentGrabLocation.rotation * Quaternion.Inverse(_initialGrabLocation.transform.rotation);
 			rotationDelta.ToAngleAxis(out angle, out axis);
-
 			if (angle > 180)
 			{
 				angle -= 360;
 			}
-
-			found_rigidbody.angularVelocity = (Time.fixedDeltaTime * angle * axis) * rotationFactor;
+			_rigidBody.angularVelocity = (Time.fixedDeltaTime * angle * axis) * rotationFactor;
 		}
 	}
 
-	public void BeginInteraction(Component wand)
+	public void BeginInteraction(Transform grabLocation)
 	{
-		attachedWand = wand;
+		_currentGrabLocation = grabLocation;
 
-		interactionPoint.position = attachedWand.transform.position;
-		interactionPoint.rotation = attachedWand.transform.rotation;
-		interactionPoint.SetParent(this.transform, true);
-
-		currentlyInteracting = true;
+		// Remember the initial grab location relative to the object that is being grabbed
+		_initialGrabLocation.transform.position = _currentGrabLocation.position;
+		_initialGrabLocation.transform.rotation = _currentGrabLocation.rotation;
+		_initialGrabLocation.transform.SetParent(this.transform, true);
 	}
 
-	public void EndInteraction(Component wand)
+	public void EndInteraction()
 	{
-		if (attachedWand == wand)
-		{
-			attachedWand = null;
-			currentlyInteracting = false;
-		}
+		_currentGrabLocation = null;
 	}
 
-	public bool IsInteracting()
+	public bool IsInteracting
 	{
-		return currentlyInteracting;
+		get { return _currentGrabLocation != null; }
 	}
+
+	public Rigidbody _rigidBody;
+
+	private Transform _currentGrabLocation;
+	private GameObject _initialGrabLocation;
+
+	private float velocityFactor = 20000f;
+	private float rotationFactor = 400f;
 }
