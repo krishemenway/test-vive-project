@@ -18,6 +18,11 @@ public class PlayerAvatar : NetworkBehaviour
 
 	void Update()
 	{
+		if (!isLocalPlayer)
+		{
+			return;
+		}
+
 		AvatarHead.transform.position = _cameraRigHeadTransform.transform.position;
 		AvatarHead.transform.rotation = _cameraRigHeadTransform.transform.rotation;
 

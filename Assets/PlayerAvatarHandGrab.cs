@@ -3,6 +3,11 @@ using UnityEngine;
 
 class PlayerAvatarHandGrab : MonoBehaviour
 {
+	{
+		_interactableItems = new HashSet<InteractableItem>();
+		_interactingItem = null;
+	}
+
 	void Start()
 	{
 		_hand = GetComponentInParent<PlayerAvatarHand>();
@@ -12,9 +17,6 @@ class PlayerAvatarHandGrab : MonoBehaviour
 			enabled = false;
 			return;
 		}
-
-		_interactableItems = new HashSet<InteractableItem>();
-		_interactingItem = null;
 	}
 
 	void Update()
