@@ -14,11 +14,18 @@ public class PlayerAvatar : NetworkBehaviour
 
 		// Attach the SteamVR camera rig to this local player avatar
 		_cameraRig.AttachToParent(transform);
+	}
 
-		// Attach the player avatar components to the SteamVR tracked objects
-		AvatarHead.AttachToParent(_cameraRigHeadTransform);
-		AvatarLeftHand.AttachToParent(LeftController.transform);
-		AvatarRightHand.AttachToParent(RightController.transform);
+	void Update()
+	{
+		AvatarHead.transform.position = _cameraRigHeadTransform.transform.position;
+		AvatarHead.transform.rotation = _cameraRigHeadTransform.transform.rotation;
+
+		AvatarLeftHand.transform.position = LeftController.transform.position;
+		AvatarLeftHand.transform.rotation = LeftController.transform.rotation;
+
+		AvatarRightHand.transform.position = RightController.transform.position;
+		AvatarRightHand.transform.rotation = RightController.transform.rotation;
 	}
 
 	private void FindTrackedObjects()
