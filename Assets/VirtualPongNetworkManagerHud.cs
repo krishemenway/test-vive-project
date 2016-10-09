@@ -52,9 +52,6 @@ public class VirtualPongNetworkManagerHud : MonoBehaviour
 			if (Input.GetKeyDown(KeyCode.X))
 			{
 				manager.StopHost();
-
-				Cursor.lockState = CursorLockMode.None;
-				Cursor.visible = true;
 			}
 		}
 		else if (NetworkClient.active)
@@ -62,9 +59,6 @@ public class VirtualPongNetworkManagerHud : MonoBehaviour
 			if (Input.GetKeyDown(KeyCode.X))
 			{
 				manager.StopClient();
-
-				Cursor.lockState = CursorLockMode.None;
-				Cursor.visible = true;
 			}
 		}
 	}
@@ -83,18 +77,12 @@ public class VirtualPongNetworkManagerHud : MonoBehaviour
 			if (GUI.Button(new Rect(xpos, ypos, 200, 20), "LAN Host(H)"))
 			{
 				manager.StartHost();
-
-				Cursor.lockState = CursorLockMode.Locked;
-				Cursor.visible = false;
 			}
 			ypos += spacing;
 
 			if (GUI.Button(new Rect(xpos, ypos, 105, 20), "LAN Client(C)"))
 			{
 				manager.StartClient();
-
-				Cursor.lockState = CursorLockMode.Locked;
-				Cursor.visible = false;
 			}
 			manager.networkAddress = GUI.TextField(new Rect(xpos + 150, ypos, 200, 20), manager.networkAddress, 64);
 			ypos += spacing;

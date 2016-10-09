@@ -8,6 +8,7 @@ public class VRPawn : NetworkBehaviour
 
 	void Start()
 	{
+		/*
 		GetComponentInChildren<SteamVR_ControllerManager>(true).enabled = isLocalPlayer;
 		GetComponentInChildren<SteamVR_PlayArea>(true).enabled = isLocalPlayer;
 		GetComponentsInChildren<SteamVR_TrackedObject>(true).ToList().ForEach(x => x.enabled = isLocalPlayer);
@@ -16,6 +17,7 @@ public class VRPawn : NetworkBehaviour
 		GetComponentsInChildren<WandController>(true).ToList().ForEach(x => x.enabled = isLocalPlayer);
 		GetComponentsInChildren<Camera>(true).ToList().ForEach(x => x.enabled = isLocalPlayer);
 		Head.SetActive(isLocalPlayer);
+		*/
 	}
 
 	void OnDestroy()
