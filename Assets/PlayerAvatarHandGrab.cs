@@ -3,6 +3,7 @@ using UnityEngine;
 
 class PlayerAvatarHandGrab : MonoBehaviour
 {
+	void Awake()
 	{
 		_interactableItems = new HashSet<InteractableItem>();
 		_interactingItem = null;
