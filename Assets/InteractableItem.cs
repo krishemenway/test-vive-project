@@ -2,12 +2,11 @@
 
 class InteractableItem : MonoBehaviour
 {
-
 	public Rigidbody found_rigidbody;
 
 	private bool currentlyInteracting;
 
-	private WandController attachedWand;
+	private Component attachedWand;
 
 	private Transform interactionPoint;
 
@@ -46,7 +45,7 @@ class InteractableItem : MonoBehaviour
 		}
 	}
 
-	public void BeginInteraction(WandController wand)
+	public void BeginInteraction(Component wand)
 	{
 		attachedWand = wand;
 		interactionPoint.position = wand.transform.position;
@@ -56,7 +55,7 @@ class InteractableItem : MonoBehaviour
 		currentlyInteracting = true;
 	}
 
-	public void EndInteraction(WandController wand)
+	public void EndInteraction(Component wand)
 	{
 		if (wand == attachedWand)
 		{

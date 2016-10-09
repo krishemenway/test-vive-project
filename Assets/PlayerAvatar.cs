@@ -3,67 +3,46 @@ using UnityEngine.Networking;
 
 public class PlayerAvatar : NetworkBehaviour
 {
-	public void Start()
-	{
-		if (!isLocalPlayer)
-		{
-			return;
-		}
-	}
-
-	public void Update()
-	{
-		if (!isLocalPlayer)
-		{
-			return;
-		}
-
-		var trigger = Valve.VR.EVRButtonId.k_EButton_SteamVR_Trigger;
-
-		TriggerButtonPressed = _leftController.GetPress(trigger);
-	}
-
 	public override void OnStartLocalPlayer()
 	{
-		CameraRig = GameObject.Find("LocalPlayerCameraRig");
-
 		FindTrackedObjects();
 
-		AttachGameObjectToTransform(CameraRig, transform);
-		AttachGameObjectToTransform(AvatarHead, _cameraRigHeadTransform);
-		AttachGameObjectToTransform(AvatarLeftHand, _cameraRigLeftControllerObject.transform);
-		AttachGameObjectToTransform(AvatarRightHand, _cameraRigRightControllerObject.transform);
+		// Attach the SteamVR camera rig to this local player avatar
+		AttachObjectToParentTransform(_cameraRig, transform);
+
+		// Attach the player avatar components to the SteamVR tracked objects
+		AttachObjectToParentTransform(AvatarHead, _cameraRigHeadTransform);
+		AttachObjectToParentTransform(AvatarLeftHand, LeftController.transform);
+		AttachObjectToParentTransform(AvatarRightHand, RightController.transform);
+
+		// Move the giant hand boxes slightly under the controllers for now (until I can figure out how to hide these for the local player but keep them visible for the remote player)...
+		AvatarLeftHand.transform.Translate(0, -0.4f, 0);
+		AvatarRightHand.transform.Translate(0, -0.4f, 0);
 	}
 
 	private void FindTrackedObjects()
 	{
-		_cameraRigHeadTransform = CameraRig.transform.Find("Head (eye)");
-		_cameraRigLeftControllerObject = CameraRig.transform.Find("LeftController").GetComponent<SteamVR_TrackedObject>();
-		_cameraRigRightControllerObject = CameraRig.transform.Find("RightController").GetComponent<SteamVR_TrackedObject>();
+		_cameraRig = GameObject.Find("LocalPlayerCameraRig");
+		_cameraRigHeadTransform = _cameraRig.transform.Find("Head (eye)");
 
-		_leftController = SteamVR_Controller.Input((int)_cameraRigLeftControllerObject.index);
-		_rightController = SteamVR_Controller.Input((int)_cameraRigRightControllerObject.index);
+		LeftController = _cameraRig.transform.Find("LeftController").GetComponent<SteamVR_TrackedController>();
+		RightController = _cameraRig.transform.Find("RightController").GetComponent<SteamVR_TrackedController>();
 	}
 
-	private void AttachGameObjectToTransform(GameObject gameObject, Transform t)
+	private void AttachObjectToParentTransform(GameObject gameObject, Transform t)
 	{
 		gameObject.transform.parent = t;
 		gameObject.transform.localRotation = Quaternion.identity;
 		gameObject.transform.localPosition = Vector3.zero;
 	}
 
-	private SteamVR_TrackedObject _cameraRigLeftControllerObject;
-	private SteamVR_TrackedObject _cameraRigRightControllerObject;
+	private GameObject _cameraRig;
 	private Transform _cameraRigHeadTransform;
 
-	private SteamVR_Controller.Device _leftController;
-	private SteamVR_Controller.Device _rightController;
-
-	public GameObject CameraRig;
+	public SteamVR_TrackedController LeftController;
+	public SteamVR_TrackedController RightController;
 
 	public GameObject AvatarHead;
 	public GameObject AvatarLeftHand;
 	public GameObject AvatarRightHand;
-
-	public bool TriggerButtonPressed;
 }
