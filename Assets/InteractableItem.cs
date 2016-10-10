@@ -42,19 +42,27 @@ class InteractableItem : NetworkBehaviour
 
 	public void BeginInteraction(PlayerAvatarHand hand)
 	{
+		Debug.Log("Sending command to server: BeginInteraction, Hand=" + hand.HandGameObject.name + ", InteractableItem=" + name);
+
 		CmdBeginInteraction(hand.PlayerAvatar.netId, hand.Hand);
 	}
 
 	public void EndInteraction(PlayerAvatarHand hand)
 	{
+		Debug.Log("Sending command to server: EndInteraction, Hand=" + hand.HandGameObject.name + ", InteractableItem=" + name);
+
 		CmdEndInteraction(hand.PlayerAvatar.netId);
 	}
 
 	[Command]
-	public void CmdBeginInteraction(NetworkInstanceId playerId, HandType hand)
+	private void CmdBeginInteraction(NetworkInstanceId playerId, HandType hand)
 	{
+		Debug.Log("Got command on server: BeginInteraction, PlayerId=" + playerId + ", Hand=" + hand);
+
 		var playerAvatar = NetworkServer.FindLocalObject(playerId).GetComponent<PlayerAvatar>();
 		var playerAvatarHand = hand == HandType.Left ? playerAvatar.AvatarLeftHand : playerAvatar.AvatarRightHand;
+
+		Debug.Log("Found player avatar: " + playerAvatar.name + ", Hand=" + playerAvatarHand.name);
 
 		_currentPlayerAvatar = playerAvatar;
 		_currentGrabLocation = playerAvatarHand.transform;
@@ -66,9 +74,13 @@ class InteractableItem : NetworkBehaviour
 	}
 
 	[Command]
-	public void CmdEndInteraction(NetworkInstanceId playerId)
+	private void CmdEndInteraction(NetworkInstanceId playerId)
 	{
+		Debug.Log("Got command on server: EndInteraction, PlayerId=" + playerId);
+
 		var playerAvatar = NetworkServer.FindLocalObject(playerId).GetComponent<PlayerAvatar>();
+
+		Debug.Log("Found player avatar: " + playerAvatar.name);
 
 		if (_currentPlayerAvatar == playerAvatar)
 		{
@@ -77,12 +89,12 @@ class InteractableItem : NetworkBehaviour
 		}
 	}
 
-	public bool IsInteracting
+	private bool IsInteracting
 	{
 		get { return _currentPlayerAvatar != null; }
 	}
 
-	public Rigidbody _rigidBody;
+	private Rigidbody _rigidBody;
 
 	private PlayerAvatar _currentPlayerAvatar;
 	private Transform _currentGrabLocation;
