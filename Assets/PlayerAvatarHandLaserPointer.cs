@@ -1,14 +1,18 @@
 ﻿using UnityEngine;
+using UnityEngine.Networking;
 
-public class PlayerAvatarHandLaserPointer : PlayerAvatarHand
+public class PlayerAvatarHandLaserPointer : NetworkBehaviour
 {
-	protected override void StartHand()
+	private void Start()
 	{
 		if (!isLocalPlayer)
 		{
 			enabled = false;
 			return;
 		}
+
+		_playerAvatar = GetComponent<PlayerAvatar>();
+		_controller = _playerAvatar.LeftController;
 
 		CreateLaserPointerObjects();
 	}
@@ -22,7 +26,7 @@ public class PlayerAvatarHandLaserPointer : PlayerAvatarHand
 		_laserPointerStartPosition = new GameObject();
 		_laserPointerStartPosition.name = "Laser Pointer Start Position";
 
-		_laserPointerStartPosition.transform.parent = Controller.transform;
+		_laserPointerStartPosition.transform.parent = _controller.transform;
 		_laserPointerStartPosition.transform.localPosition = Vector3.zero;
 		_laserPointerStartPosition.transform.localRotation = Quaternion.identity;
 
@@ -51,12 +55,12 @@ public class PlayerAvatarHandLaserPointer : PlayerAvatarHand
 			isActive = true;
 
 			// All this code is suspect...
-			var childGameObject = Controller.transform.GetChild(0).gameObject;  // This line of code seems extremely suspect...  Why are we getting child 0?
+			var childGameObject = _controller.transform.GetChild(0).gameObject;  // This line of code seems extremely suspect...  Why are we getting child 0?
 			Debug.Log("ACTIVATING CHILD GAME OBJECT: " + childGameObject.name);
 			childGameObject.SetActive(true);
 		}
 
-		Ray raycast = new Ray(Controller.transform.position, Controller.transform.forward);
+		Ray raycast = new Ray(_controller.transform.position, _controller.transform.forward);
 		RaycastHit hit;
 		bool bHit = Physics.Raycast(raycast, out hit);
 
@@ -66,7 +70,7 @@ public class PlayerAvatarHandLaserPointer : PlayerAvatarHand
 			dist = hit.distance;
 		}
 
-		var currentThickness = Controller.triggerPressed ? thickness * 5f : thickness;
+		var currentThickness = _controller.triggerPressed ? thickness * 5f : thickness;
 
 		_laserPointerCube.transform.localScale = new Vector3(currentThickness, currentThickness, dist);
 		_laserPointerCube.transform.localPosition = new Vector3(0f, 0f, dist / 2f);
@@ -77,6 +81,9 @@ public class PlayerAvatarHandLaserPointer : PlayerAvatarHand
 
 	private GameObject _laserPointerStartPosition;
 	private GameObject _laserPointerCube;
+
+	private SteamVR_TrackedController _controller;
+	private PlayerAvatar _playerAvatar;
 
 	private bool isActive = false;
 }

@@ -1,8 +1,9 @@
 ﻿using UnityEngine;
+using UnityEngine.Networking;
 
-class PlayerAvatarHandTeleporter : PlayerAvatarHand
+class PlayerAvatarHandTeleporter : NetworkBehaviour
 {
-	protected override void StartHand()
+	private void Start()
 	{
 		if (!isLocalPlayer)
 		{
@@ -10,7 +11,10 @@ class PlayerAvatarHandTeleporter : PlayerAvatarHand
 			return;
 		}
 
-		Controller.TriggerClicked += _leftController_TriggerClicked;
+		_playerAvatar = GetComponent<PlayerAvatar>();
+		_controller = _playerAvatar.LeftController;
+
+		_controller.TriggerClicked += _leftController_TriggerClicked;
 	}
 
 	private Transform reference
@@ -31,7 +35,7 @@ class PlayerAvatarHandTeleporter : PlayerAvatarHand
 		float refY = t.position.y;
 
 		Plane plane = new Plane(Vector3.up, -refY);
-		Ray ray = new Ray(Controller.transform.position, Controller.transform.forward);
+		Ray ray = new Ray(_controller.transform.position, _controller.transform.forward);
 
 		bool hasGroundTarget = false;
 		float dist = 0f;
@@ -48,7 +52,10 @@ class PlayerAvatarHandTeleporter : PlayerAvatarHand
 			//_playerAvatar.transform.position = ray.origin + ray.direction * dist - new Vector3(t.GetChild(0).localPosition.x, 0f, t.GetChild(0).localPosition.z) - headPosOnGround;
 
 			// Fixed???  Ignores the Child(0) position (Whatever that is supposed to be?  maybe it is the location of your head within the play area???)
-			PlayerAvatar.transform.position = ray.origin + ray.direction * dist - headPosOnGround;
+			_playerAvatar.transform.position = ray.origin + ray.direction * dist - headPosOnGround;
 		}
 	}
+
+	private SteamVR_TrackedController _controller;
+	private PlayerAvatar _playerAvatar;
 }
