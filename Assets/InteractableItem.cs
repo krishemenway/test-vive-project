@@ -1,8 +1,9 @@
 ﻿using UnityEngine;
+using UnityEngine.Networking;
 
-class InteractableItem : MonoBehaviour
+class InteractableItem : NetworkBehaviour
 {
-	void Start()
+	void Awake()
 	{
 		_rigidBody = GetComponent<Rigidbody>();
 
@@ -15,6 +16,11 @@ class InteractableItem : MonoBehaviour
 
 	void Update()
 	{
+		if (!isServer)
+		{
+			return;
+		}
+
 		if (IsInteracting)
 		{
 			var posDelta = _currentGrabLocation.position - _initialGrabLocation.transform.position;
@@ -34,29 +40,53 @@ class InteractableItem : MonoBehaviour
 		}
 	}
 
-	public void BeginInteraction(Transform grabLocation)
+	public void BeginInteraction(PlayerAvatarHand hand)
 	{
-		_currentGrabLocation = grabLocation;
+		CmdBeginInteraction(hand.PlayerAvatar.netId, hand.Hand);
+	}
+
+	public void EndInteraction(PlayerAvatarHand hand)
+	{
+		CmdEndInteraction(hand.PlayerAvatar.netId);
+	}
+
+	[Command]
+	public void CmdBeginInteraction(NetworkInstanceId playerId, HandType hand)
+	{
+		var playerAvatar = NetworkServer.FindLocalObject(playerId).GetComponent<PlayerAvatar>();
+		var playerAvatarHand = hand == HandType.Left ? playerAvatar.AvatarLeftHand : playerAvatar.AvatarRightHand;
+
+		_currentPlayerAvatar = playerAvatar;
+		_currentGrabLocation = playerAvatarHand.transform;
 
 		// Remember the initial grab location relative to the object that is being grabbed
 		_initialGrabLocation.transform.position = _currentGrabLocation.position;
 		_initialGrabLocation.transform.rotation = _currentGrabLocation.rotation;
-		_initialGrabLocation.transform.SetParent(this.transform, true);
+		_initialGrabLocation.transform.SetParent(transform, true);
 	}
 
-	public void EndInteraction()
+	[Command]
+	public void CmdEndInteraction(NetworkInstanceId playerId)
 	{
-		_currentGrabLocation = null;
+		var playerAvatar = NetworkServer.FindLocalObject(playerId).GetComponent<PlayerAvatar>();
+
+		if (_currentPlayerAvatar == playerAvatar)
+		{
+			_currentPlayerAvatar = null;
+			_currentGrabLocation = null;
+		}
 	}
 
 	public bool IsInteracting
 	{
-		get { return _currentGrabLocation != null; }
+		get { return _currentPlayerAvatar != null; }
 	}
 
 	public Rigidbody _rigidBody;
 
+	private PlayerAvatar _currentPlayerAvatar;
 	private Transform _currentGrabLocation;
+
 	private GameObject _initialGrabLocation;
 
 	private float velocityFactor = 20000f;

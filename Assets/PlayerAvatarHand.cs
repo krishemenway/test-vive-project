@@ -5,6 +5,7 @@ class PlayerAvatarHand : MonoBehaviour
 	void Start()
 	{
 		PlayerAvatar = GetComponentInParent<PlayerAvatar>();
+		HandGameObject = Hand == HandType.Left ? PlayerAvatar.AvatarLeftHand : PlayerAvatar.AvatarRightHand;
 
 		if (!IsLocalPlayer)
 		{
@@ -18,6 +19,7 @@ class PlayerAvatarHand : MonoBehaviour
 	public HandType Hand;
 
 	public PlayerAvatar PlayerAvatar { get; private set; }
+	public GameObject HandGameObject { get; private set; }
 	public SteamVR_TrackedController Controller { get; private set; }
 	public bool IsLocalPlayer
 	{

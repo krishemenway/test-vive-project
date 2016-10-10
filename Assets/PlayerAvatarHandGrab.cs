@@ -49,11 +49,12 @@ class PlayerAvatarHandGrab : MonoBehaviour
 			{
 				if (_interactingItem != null)
 				{
-					_interactingItem.EndInteraction();
+					_interactingItem.EndInteraction(_hand);
 				}
 
 				_interactingItem = closestItem;
-				_interactingItem.BeginInteraction(_hand.Controller.transform);
+
+				_interactingItem.BeginInteraction(_hand);
 			}
 		}
 
@@ -63,7 +64,7 @@ class PlayerAvatarHandGrab : MonoBehaviour
 
 			if (_interactingItem != null)
 			{
-				_interactingItem.EndInteraction();
+				_interactingItem.EndInteraction(_hand);
 			}
 		}
 	}
