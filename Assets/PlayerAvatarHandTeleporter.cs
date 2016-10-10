@@ -1,18 +1,16 @@
 ﻿using UnityEngine;
 
-class PlayerAvatarHandTeleporter : MonoBehaviour
+class PlayerAvatarHandTeleporter : PlayerAvatarHand
 {
-	void Start()
+	protected override void StartHand()
 	{
-		_hand = GetComponentInParent<PlayerAvatarHand>();
-
-		if (!_hand.IsLocalPlayer)
+		if (!isLocalPlayer)
 		{
 			enabled = false;
 			return;
 		}
 
-		_hand.Controller.TriggerClicked += _leftController_TriggerClicked;
+		Controller.TriggerClicked += _leftController_TriggerClicked;
 	}
 
 	private Transform reference
@@ -33,7 +31,7 @@ class PlayerAvatarHandTeleporter : MonoBehaviour
 		float refY = t.position.y;
 
 		Plane plane = new Plane(Vector3.up, -refY);
-		Ray ray = new Ray(_hand.Controller.transform.position, _hand.Controller.transform.forward);
+		Ray ray = new Ray(Controller.transform.position, Controller.transform.forward);
 
 		bool hasGroundTarget = false;
 		float dist = 0f;
@@ -43,16 +41,14 @@ class PlayerAvatarHandTeleporter : MonoBehaviour
 		{
 			Vector3 headPosOnGround = new Vector3(SteamVR_Render.Top().head.localPosition.x, 0.0f, SteamVR_Render.Top().head.localPosition.z);
 
-			// Standard transport behavior -- moves the camera only ???
+			// Standard transport behavior -- moves the camera only... this is bad, the player avatar position doesn't change, so the camera is way far away from the base position of the player
 			//t.position = ray.origin + ray.direction * dist - new Vector3(t.GetChild(0).localPosition.x, 0f, t.GetChild(0).localPosition.z) - headPosOnGround;
 
-			// My transport behavior -- moves the player avatar position ???
+			// Better transport behavior -- moves the player avatar position, but seems to not move where you point exactly
 			//_playerAvatar.transform.position = ray.origin + ray.direction * dist - new Vector3(t.GetChild(0).localPosition.x, 0f, t.GetChild(0).localPosition.z) - headPosOnGround;
 
-			// Fixed???
-			_hand.PlayerAvatar.transform.position = ray.origin + ray.direction * dist - headPosOnGround;
+			// Fixed???  Ignores the Child(0) position (Whatever that is supposed to be?  maybe it is the location of your head within the play area???)
+			PlayerAvatar.transform.position = ray.origin + ray.direction * dist - headPosOnGround;
 		}
 	}
-
-	private PlayerAvatarHand _hand;
 }

@@ -1,28 +1,22 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
+using UnityEngine.Networking;
 
-class PlayerAvatarHandGrab : MonoBehaviour
+public class PlayerAvatarHandGrab : PlayerAvatarHand
 {
-	void Awake()
+	protected override void StartHand()
 	{
-		_interactableItems = new HashSet<InteractableItem>();
+		_collisionDetector = HandGameObject.GetComponent<PlayerAvatarCollisionDetector>();
 		_interactingItem = null;
 	}
 
-	void Start()
+	private void Update()
 	{
-		_hand = GetComponentInParent<PlayerAvatarHand>();
-
-		if (!_hand.IsLocalPlayer)
+		if (!isLocalPlayer)
 		{
-			enabled = false;
 			return;
 		}
-	}
 
-	void Update()
-	{
-		var grippedNow = _hand.Controller.gripped;
+		var grippedNow = Controller.gripped;
 
 		var gripDown = !_isGripped && grippedNow;
 		var gripUp = _isGripped && !grippedNow;
@@ -30,13 +24,11 @@ class PlayerAvatarHandGrab : MonoBehaviour
 
 		if (gripDown)
 		{
-			Debug.Log("GRIP DOWN");
-
 			float minDistance = float.MaxValue;
 			InteractableItem closestItem = null;
-			foreach (var item in _interactableItems)
+			foreach (var item in _collisionDetector.CollisionItems)
 			{
-				var distance = (item.transform.position - _hand.Controller.transform.position).sqrMagnitude;
+				var distance = (item.transform.position - Controller.transform.position).sqrMagnitude;
 
 				if (distance < minDistance)
 				{
@@ -47,56 +39,57 @@ class PlayerAvatarHandGrab : MonoBehaviour
 
 			if (closestItem != null)
 			{
-				if (_interactingItem != null)
-				{
-					_interactingItem.EndInteraction(_hand);
-				}
-
-				_interactingItem = closestItem;
-
-				_interactingItem.BeginInteraction(_hand);
+				Debug.Log("Send command to server: PickUpObject, ObjectId=" + closestItem.netId + ", PlayerId=" + PlayerAvatar.netId);
+				CmdPickUpObject(closestItem.netId);
 			}
 		}
 
 		if (gripUp)
 		{
-			Debug.Log("GRIP UP");
+			Debug.Log("Send command to server: DropObject, PlayerId=" + PlayerAvatar.netId);
+			CmdDropObject();
+		}
+	}
 
+	[Command]
+	private void CmdPickUpObject(NetworkInstanceId objectToPickUpId)
+	{
+		Debug.Log("Got command on server: PickUpObject, ObjectId=" + objectToPickUpId + ", PlayerId=" + PlayerAvatar.netId);
+
+		var gameObject = NetworkServer.FindLocalObject(objectToPickUpId);
+
+		Debug.Log("Found game object from ID: " + gameObject.name);
+
+		var item = gameObject.GetComponent<InteractableItem>();
+
+		if (item != null)
+		{
 			if (_interactingItem != null)
 			{
-				_interactingItem.EndInteraction(_hand);
+				_interactingItem.EndInteraction(PlayerAvatar);
 			}
+
+			_interactingItem = item;
+			_interactingItem.BeginInteraction(PlayerAvatar, HandGameObject.transform);
 		}
 	}
 
-	void OnTriggerEnter(Collider collider)
+	[Command]
+	private void CmdDropObject()
 	{
-		var collidedItem = collider.GetComponent<InteractableItem>();
-		if (collidedItem != null)
-		{
-			_interactableItems.Add(collidedItem);
+		Debug.Log("Got command on server: DropObject, PlayerId=" + PlayerAvatar.netId);
 
-			Debug.Log("On Enter " + collidedItem.name);
-			Debug.Log("Number of items: " + _interactableItems.Count);
+		if (_interactingItem != null)
+		{
+			_interactingItem.EndInteraction(PlayerAvatar);
+			_interactingItem = null;
 		}
 	}
 
-	void OnTriggerExit(Collider collider)
-	{
-		var collidedItem = collider.GetComponent<InteractableItem>();
-		if (collidedItem != null)
-		{
-			_interactableItems.Remove(collidedItem);
-
-			Debug.Log("On Exit " + collidedItem.name);
-			Debug.Log("Number of items: " + _interactableItems.Count);
-		}
-	}
-
-	private bool _isGripped = false;
-
+	// Server variables
 	private InteractableItem _interactingItem;
-	private HashSet<InteractableItem> _interactableItems;
 
-	private PlayerAvatarHand _hand;
+	// Client variables
+	private bool _isGripped = false;
+	private PlayerAvatarCollisionDetector _collisionDetector;
 }

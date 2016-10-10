@@ -1,21 +1,19 @@
 ﻿using UnityEngine;
 
-class PlayerAvatarHandLaserPointer : MonoBehaviour
+public class PlayerAvatarHandLaserPointer : PlayerAvatarHand
 {
-	void Start()
+	protected override void StartHand()
 	{
-		_hand = GetComponent<PlayerAvatarHand>();
-
-		if (!_hand.IsLocalPlayer)
+		if (!isLocalPlayer)
 		{
 			enabled = false;
 			return;
 		}
-		
+
 		CreateLaserPointerObjects();
 	}
 
-	void CreateLaserPointerObjects()
+	private void CreateLaserPointerObjects()
 	{
 		var newMaterial = new Material(Shader.Find("Unlit/Color"));
 		newMaterial.SetColor("_Color", color);
@@ -24,7 +22,7 @@ class PlayerAvatarHandLaserPointer : MonoBehaviour
 		_laserPointerStartPosition = new GameObject();
 		_laserPointerStartPosition.name = "Laser Pointer Start Position";
 
-		_laserPointerStartPosition.transform.parent = _hand.Controller.transform;
+		_laserPointerStartPosition.transform.parent = Controller.transform;
 		_laserPointerStartPosition.transform.localPosition = Vector3.zero;
 		_laserPointerStartPosition.transform.localRotation = Quaternion.identity;
 
@@ -46,19 +44,19 @@ class PlayerAvatarHandLaserPointer : MonoBehaviour
 		}
 	}
 
-	void Update()
+	private void Update()
 	{
 		if (!isActive)
 		{
 			isActive = true;
 
 			// All this code is suspect...
-			var childGameObject = _hand.Controller.transform.GetChild(0).gameObject;  // This line of code seems extremely suspect...
+			var childGameObject = Controller.transform.GetChild(0).gameObject;  // This line of code seems extremely suspect...  Why are we getting child 0?
 			Debug.Log("ACTIVATING CHILD GAME OBJECT: " + childGameObject.name);
 			childGameObject.SetActive(true);
 		}
 
-		Ray raycast = new Ray(_hand.Controller.transform.position, _hand.Controller.transform.forward);
+		Ray raycast = new Ray(Controller.transform.position, Controller.transform.forward);
 		RaycastHit hit;
 		bool bHit = Physics.Raycast(raycast, out hit);
 
@@ -68,7 +66,7 @@ class PlayerAvatarHandLaserPointer : MonoBehaviour
 			dist = hit.distance;
 		}
 
-		var currentThickness = _hand.Controller.triggerPressed ? thickness * 5f : thickness;
+		var currentThickness = Controller.triggerPressed ? thickness * 5f : thickness;
 
 		_laserPointerCube.transform.localScale = new Vector3(currentThickness, currentThickness, dist);
 		_laserPointerCube.transform.localPosition = new Vector3(0f, 0f, dist / 2f);
@@ -76,8 +74,6 @@ class PlayerAvatarHandLaserPointer : MonoBehaviour
 
 	public Color color;
 	public float thickness = 0.002f;
-
-	private PlayerAvatarHand _hand;
 
 	private GameObject _laserPointerStartPosition;
 	private GameObject _laserPointerCube;

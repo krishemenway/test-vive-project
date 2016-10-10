@@ -1,9 +1,9 @@
 ﻿using UnityEngine;
 using UnityEngine.Networking;
 
-class InteractableItem : NetworkBehaviour
+public class InteractableItem : NetworkBehaviour
 {
-	void Awake()
+	private void Awake()
 	{
 		_rigidBody = GetComponent<Rigidbody>();
 
@@ -14,7 +14,7 @@ class InteractableItem : NetworkBehaviour
 		_initialGrabLocation.AttachDebugCube();
 	}
 
-	void Update()
+	private void Update()
 	{
 		if (!isServer)
 		{
@@ -40,32 +40,12 @@ class InteractableItem : NetworkBehaviour
 		}
 	}
 
-	public void BeginInteraction(PlayerAvatarHand hand)
+	public void BeginInteraction(PlayerAvatar playerAvatar, Transform handTransform)
 	{
-		Debug.Log("Sending command to server: BeginInteraction, Hand=" + hand.HandGameObject.name + ", InteractableItem=" + name);
-
-		CmdBeginInteraction(hand.PlayerAvatar.netId, hand.Hand);
-	}
-
-	public void EndInteraction(PlayerAvatarHand hand)
-	{
-		Debug.Log("Sending command to server: EndInteraction, Hand=" + hand.HandGameObject.name + ", InteractableItem=" + name);
-
-		CmdEndInteraction(hand.PlayerAvatar.netId);
-	}
-
-	[Command]
-	private void CmdBeginInteraction(NetworkInstanceId playerId, HandType hand)
-	{
-		Debug.Log("Got command on server: BeginInteraction, PlayerId=" + playerId + ", Hand=" + hand);
-
-		var playerAvatar = NetworkServer.FindLocalObject(playerId).GetComponent<PlayerAvatar>();
-		var playerAvatarHand = hand == HandType.Left ? playerAvatar.AvatarLeftHand : playerAvatar.AvatarRightHand;
-
-		Debug.Log("Found player avatar: " + playerAvatar.name + ", Hand=" + playerAvatarHand.name);
+		Debug.Log("Begin interaction on " + name + " for player " + playerAvatar.name + " with hand " + handTransform.name);
 
 		_currentPlayerAvatar = playerAvatar;
-		_currentGrabLocation = playerAvatarHand.transform;
+		_currentGrabLocation = handTransform;
 
 		// Remember the initial grab location relative to the object that is being grabbed
 		_initialGrabLocation.transform.position = _currentGrabLocation.position;
@@ -73,14 +53,9 @@ class InteractableItem : NetworkBehaviour
 		_initialGrabLocation.transform.SetParent(transform, true);
 	}
 
-	[Command]
-	private void CmdEndInteraction(NetworkInstanceId playerId)
+	public void EndInteraction(PlayerAvatar playerAvatar)
 	{
-		Debug.Log("Got command on server: EndInteraction, PlayerId=" + playerId);
-
-		var playerAvatar = NetworkServer.FindLocalObject(playerId).GetComponent<PlayerAvatar>();
-
-		Debug.Log("Found player avatar: " + playerAvatar.name);
+		Debug.Log("End interaction on " + name + "?");
 
 		if (_currentPlayerAvatar == playerAvatar)
 		{

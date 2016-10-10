@@ -45,8 +45,8 @@ public class PlayerAvatar : NetworkBehaviour
 	private GameObject _cameraRig;
 	private Transform _cameraRigHeadTransform;
 
-	public SteamVR_TrackedController LeftController;
-	public SteamVR_TrackedController RightController;
+	public SteamVR_TrackedController LeftController { get; set; }
+	public SteamVR_TrackedController RightController { get; set; }
 
 	public GameObject AvatarHead;
 	public GameObject AvatarLeftHand;
